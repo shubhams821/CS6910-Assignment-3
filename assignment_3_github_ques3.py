@@ -637,3 +637,92 @@ def train_sweep():
 
 wandb_id = wandb.sweep(sweep_configuration, project="CS6910_Assn3_AttnRNN")
 wandb.agent(wandb_id, train_sweep)
+
+import csv
+import random
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def generate_predictions(model, data_loader, device):
+    predictions = []
+    ground_truths = []
+    with torch.no_grad():
+        for batch in data_loader:
+            src = batch[0].to(device)
+            trg = batch[1].to(device)
+            output = model(src, trg, 0)  # turn off teacher forcing
+            # output = [trg length, batch size, trg vocab size]
+            output_dim = output.shape[-1]
+            output = output.argmax(dim=-1)  # get predicted token indices
+            predictions.extend(output.cpu().numpy().tolist())
+            ground_truths.extend(trg[1:].cpu().numpy().tolist())  # exclude SOS token
+    return predictions, ground_truths
+
+def save_to_csv(inputs, predictions, ground_truths, filename):
+    with open(filename, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Input', 'Prediction', 'Ground Truth'])
+        for input_seq, prediction_seq, ground_truth_seq in zip(inputs, predictions, ground_truths):
+            input_text = ' '.join([input_lang.index2word[idx] for idx in input_seq])
+            prediction_text = ' '.join([output_lang.index2word[idx] for idx in prediction_seq])
+            ground_truth_text = ' '.join([output_lang.index2word[idx] for idx in ground_truth_seq])
+            writer.writerow([input_text, prediction_text, ground_truth_text])
+
+def select_random_samples(data_loader, num_samples):
+    samples = random.sample(data_loader.dataset, num_samples)
+    return [src for src, _ in samples], [trg for _, trg in samples]
+
+
+# Generate random samples
+random_inputs, random_ground_truths = select_random_samples(test_dataloader, 15)
+
+# Generate predictions for random samples
+random_predictions, _ = generate_predictions(model, random_inputs, device)
+
+# Save predictions to CSV
+save_to_csv(random_inputs, random_predictions, random_ground_truths, '/kaggle/working/random_15_predictions.csv')
+
+
+
+# Read the CSV file
+df = pd.read_csv('/kaggle/working/random_15_predictions.csv')
+
+# Create a figure and axis
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Create a table from the DataFrame
+table = ax.table(cellText=df.values, colLabels=df.columns, loc='center')
+
+# Adjust the table properties
+table.auto_set_font_size(False)
+table.set_fontsize(12)
+table.scale(1.2, 1.2)
+
+# Remove axes and ticks
+ax.axis('off')
+
+# Set the plot title
+plt.title('Random 15 Predictions')
+
+# Save the plot
+plt.savefig('/kaggle/working/random_15_predictions_table.png')
+
+# Show the plot
+plt.show()
+
+
+from PIL import Image
+# Initialize WandB with your project name
+wandb.init(project="CS6910_Assignment3_Attention")
+# List of tuples containing paths to your images and their respective names
+image_info = [
+    ("/kaggle/working/random_15_predictions_table.png", "predictions on test set with attention")
+]
+
+# Log each image with its name
+for i, (path, name) in enumerate(image_info):
+    image = Image.open(path)
+    wandb.log({f"{name}": wandb.Image(image)}, commit=False)
+
+# Finish the logging and create a grid visualization
+wandb.finish()

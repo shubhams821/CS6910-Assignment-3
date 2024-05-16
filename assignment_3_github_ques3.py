@@ -726,3 +726,58 @@ for i, (path, name) in enumerate(image_info):
 
 # Finish the logging and create a grid visualization
 wandb.finish()
+
+
+def showAttention(input_sentence, output_words, attentions):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(attentions.cpu().numpy(), cmap='bone')
+    fig.colorbar(cax)
+
+    # Set up axes
+    ax.set_xticklabels([''] + input_sentence.split(' ') +
+                       ['<EOS>'], rotation=90)
+    ax.set_yticklabels([''] + output_words)
+
+    # Show label at every tick
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    plt.show()
+
+
+def evaluateAndShowAttention(input_sentence):
+    output_words, attentions = evaluate(encoder, decoder, input_sentence, input_lang, output_lang)
+    print('input =', input_sentence)
+    print('output =', ' '.join(output_words))
+    showAttention(input_sentence, output_words, attentions[0, :len(output_words), :])
+
+# Initialize wandb
+wandb.init(project="CS6910_Assignment3_Attention")
+
+# Function to generate random plots with input word names
+def generate_random_plots(model, data_loader, device, num_plots=9):
+    # Get random indices
+    random_indices = random.sample(range(len(data_loader.dataset)), num_plots)
+    
+    # Iterate over random indices
+    for i, idx in enumerate(random_indices):
+        # Show attention for each random example
+        show_attention(model, data_loader, device, idx)
+        
+        # Get input sentence
+        input_sentence = [input_lang.index2word[idx.item()] for idx in data_loader.dataset[idx][0]]
+        
+        # Set plot title and save
+        plt.title(' '.join(input_sentence))
+        image_path = f'/kaggle/working/plot_{i}.png'
+        plt.savefig(image_path)
+        plt.close()
+        
+        # Log the image with its name
+        wandb.log({f'{i}': wandb.Image(image_path, caption=' '.join(input_sentence))})
+
+# Generate random plots
+generate_random_plots(model, test_dataloader, device)
+
+

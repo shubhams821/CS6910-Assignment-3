@@ -731,7 +731,7 @@ wandb.finish()
 def showAttention(input_sentence, output_words, attentions):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    cax = ax.matshow(attentions.cpu().numpy(), cmap='bone')
+    cax = ax.matshow(attentions.cpu().numpy())
     fig.colorbar(cax)
 
     # Set up axes

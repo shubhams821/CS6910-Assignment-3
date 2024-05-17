@@ -1,4 +1,4 @@
-
+from __future__ import unicode_literals, print_function, division
 # This Python 3 environment comes with many helpful analytics libraries installed
 # It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
 # For example, here's several helpful packages to load
@@ -21,7 +21,7 @@ for dirname, _, filenames in os.walk('/kaggle/input'):
 import wandb
 wandb.login(key = 'da5365b4335ad8c7a1df7f3653ec9d0b092e8b09')
 
-from __future__ import unicode_literals, print_function, division
+
 from io import open
 import unicodedata
 import re
@@ -537,8 +537,6 @@ def train_model(model, train_dataloader,valid_dataloader,test_dataloader, optimi
 n_epochs = 70
 clip = 0
 teacher_forcing_ratio = 0.75
-learning_rate = 0
-optimizer = optim.Adam(model.parameters(),lr = .001)
 criterion = nn.CrossEntropyLoss()
 input_dim = input_lang.n_words
 output_dim = output_lang.n_words
@@ -557,6 +555,7 @@ _,_, test_dataloader = get_dataloader_test(batch_size)
 encoder = Encoder(input_dim, encoder_embedding_dim, hidden_dim, n_layers, encoder_dropout,cell_type)
 decoder = Decoder(output_dim,decoder_embedding_dim,hidden_dim,n_layers,decoder_dropout,cell_type)
 model = Seq2Seq(encoder, decoder, device).to(device)
+optimizer = optim.Adam(model.parameters(),lr = .001)
 train_model(model, train_dataloader,valid_dataloader,test_dataloader, optimizer, criterion, clip, teacher_forcing_ratio, device ,n_epochs)
 
 sweep_configuration = {

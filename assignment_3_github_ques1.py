@@ -1,4 +1,4 @@
-
+from __future__ import unicode_literals, print_function, division
 
 # This Python 3 environment comes with many helpful analytics libraries installed
 # It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
@@ -22,7 +22,7 @@ for dirname, _, filenames in os.walk('/kaggle/input'):
 import wandb
 wandb.login(key = 'da5365b4335ad8c7a1df7f3653ec9d0b092e8b09')
 
-from __future__ import unicode_literals, print_function, division
+
 from io import open
 import unicodedata
 import re

@@ -2,6 +2,7 @@
 
 1. Use Kaggle to run the each file.
 2. Before running the code make sure to add the dataset 'Aksharantar dataset' in the kaggle and GPU is turned on.
+
 wandb report: [https://wandb.ai/shubham821/CS6910_Assn3_RNN/reports/CS6910-Assignment-3--Vmlldzo3OTQwMDk1](url)
 ## Question 1:
 RNN Network code block - 
